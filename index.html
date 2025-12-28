@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强版任务进度追踪器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f9ff;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            background-image: linear-gradient(to bottom right, #e8f4ff, #f0f8ff);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, #4a6ee0, #6a11cb);
+        }
+        
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .date-display {
+            background-color: #4a6ee0;
+            color: white;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(74, 110, 224, 0.3);
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .task-section, .todo-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+            color: #2d3748;
+        }
+        
+        .section-title i {
+            margin-right: 10px;
+            color: #4a6ee0;
+            font-size: 1.5rem;
+        }
+        
+        .clear-btn {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #718096;
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-btn:hover {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+        
+        .task-item {
+            margin-bottom: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: #f8fafc;
+            border-left: 4px solid #4a6ee0;
+            transition: all 0.3s ease;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .task-name {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.2rem;
+        }
+        
+        .task-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .task-btn {
+            background: none;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+        
+        .edit-btn:hover {
+            background-color: #bae6fd;
+        }
+        
+        .delete-btn {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .delete-btn:hover {
+            background-color: #fecaca;
+        }
+        
+        .task-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #4b5563;
+        }
+        
+        .task-target {
+            background-color: #e0f2fe;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .task-current {
+            background-color: #dbeafe;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .task-percentage {
+            font-weight: 700;
+            color: #4a6ee0;
+            font-size: 1.2rem;
+        }
+        
+        .progress-container {
+            height: 22px;
+            background-color: #e2e8f0;
+            border-radius: 11px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #4a6ee0, #6a11cb);
+            border-radius: 11px;
+            width: 0%;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .progress-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .progress-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .progress-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+        
+        .progress-input:focus {
+            outline: none;
+            border-color: #4a6ee0;
+            box-shadow: 0 0 0 3px rgba(74, 110, 224, 0.1);
+        }
+        
+        .progress-btn {
+            background-color: #4a6ee0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+            justify-content: center;
+            min-width: 120px;
+        }
+        
+        .progress-btn:hover {
+            background-color: #3a5ed0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(74, 110, 224, 0.2);
+        }
+        
+        .todo-list {
+            list-style-type: none;
+        }
+        
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #4a6ee0;
+            transition: all 0.3s ease;
+        }
+        
+        .todo-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .todo-item.completed {
+            opacity: 0.8;
+            border-left-color: #38a169;
+        }
+        
+        .todo-checkbox {
+            width: 22px;
+            height: 22px;
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: #4a6ee0;
+        }
+        
+        .todo-text {
+            flex: 1;
+            font-size: 1rem;
+        }
+        
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #718096;
+        }
+        
+        .todo-time {
+            font-size: 0.85rem;
+            color: #a0aec0;
+            margin-right: 15px;
+        }
+        
+        .todo-delete-btn {
+            background: none;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            transition: all 0.3s ease;
+        }
+        
+        .todo-delete-btn:hover {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .add-task-form, .add-todo-form {
+            display: flex;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        
+        .task-input, .todo-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .task-input:focus, .todo-input:focus {
+            outline: none;
+            border-color: #4a6ee0;
+            box-shadow: 0 0 0 3px rgba(74, 110, 224, 0.1);
+        }
+        
+        .add-btn {
+            background-color: #4a6ee0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .add-btn:hover {
+            background-color: #3a5ed0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(74, 110, 224, 0.2);
+        }
+        
+        .stats-section {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8fafc, #edf2f7);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border-top: 4px solid #4a6ee0;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4a6ee0;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 1rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #a0aec0;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #e2e8f0;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: #2d3748;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: #4a6ee0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4a6ee0;
+            box-shadow: 0 0 0 3px rgba(74, 110, 224, 0.1);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn-primary {
+            flex: 1;
+            background-color: #4a6ee0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3a5ed0;
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            background-color: #f1f5f9;
+            color: #4b5563;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .add-task-form, .add-todo-form {
+                flex-direction: column;
+            }
+            
+            .progress-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-tasks"></i> 增强版任务进度追踪器</h1>
+            <p class="subtitle">记录您的任务进度，设置具体目标量，管理每日待办事项</p>
+            <div class="date-display" id="currentDate"></div>
+        </header>
+        
+        <div class="main-content">
+            <section class="task-section">
+                <div class="section-title">
+                    <div>
+                        <i class="fas fa-chart-line"></i> 任务进度追踪
+                    </div>
+                    <button class="clear-btn" id="clearAllTasks">
+                        <i class="fas fa-trash-alt"></i> 清空所有任务
+                    </button>
+                </div>
+                
+                <div id="tasksContainer">
+                    <!-- 任务项目将通过JavaScript动态生成 -->
+                </div>
+                
+                <div class="empty-state" id="emptyTasks">
+                    <i class="fas fa-tasks"></i>
+                    <p>暂无任务，请添加新任务开始追踪进度</p>
+                </div>
+                
+                <div class="add-task-form">
+                    <input type="text" class="task-input" id="newTaskInput" placeholder="输入新任务名称...">
+                    <button class="add-btn" id="addTaskBtn"><i class="fas fa-plus"></i> 添加任务</button>
+                </div>
+            </section>
+            
+            <section class="todo-section">
+                <div class="section-title">
+                    <div>
+                        <i class="fas fa-clipboard-list"></i> 今日待办事项
+                    </div>
+                    <button class="clear-btn" id="clearAllTodos">
+                        <i class="fas fa-trash-alt"></i> 清空所有待办
+                    </button>
+                </div>
+                
+                <ul class="todo-list" id="todoList">
+                    <!-- 待办事项将通过JavaScript动态生成 -->
+                </ul>
+                
+                <div class="empty-state" id="emptyTodos">
+                    <i class="fas fa-clipboard"></i>
+                    <p>暂无待办事项，请添加新事项</p>
+                </div>
+                
+                <div class="add-todo-form">
+                    <input type="text" class="todo-input" id="newTodoInput" placeholder="输入待办事项...">
+                    <button class="add-btn" id="addTodoBtn"><i class="fas fa-plus"></i> 添加待办</button>
+                </div>
+            </section>
+        </div>
+        
+        <section class="stats-section">
+            <h2 class="section-title"><i class="fas fa-chart-bar"></i> 今日统计</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">总任务数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgProgress">0%</div>
+                    <div class="stat-label">平均进度</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completedTodos">0</div>
+                    <div class="stat-label">已完成待办</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTodos">0</div>
+                    <div class="stat-label">总待办数</div>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <p>© 2023 任务进度追踪器 | 数据保存于浏览器本地存储 | 支持自定义任务目标量</p>
+        </footer>
+    </div>
+
+    <!-- 任务编辑模态框 -->
+    <div class="modal" id="editTaskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">编辑任务</h3>
+                <button class="close-modal" id="closeEditModal">&times;</button>
+            </div>
+            <form id="editTaskForm">
+                <div class="form-group">
+                    <label class="form-label" for="editTaskName">任务名称</label>
+                    <input type="text" class="form-input" id="editTaskName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editTotalTarget">总目标量</label>
+                    <input type="number" class="form-input" id="editTotalTarget" min="1" required>
+                    <small>例如：100页书，50道题，10小时等</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="editCurrentValue">当前完成量</label>
+                    <input type="number" class="form-input" id="editCurrentValue" min="0" required>
+                    <small>例如：已读30页，已完成20道题，已学习5小时等</small>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelEdit">取消</button>
+                    <button type="submit" class="btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 初始化数据
+        let tasks = [];
+        let todos = [];
+        let currentEditTaskId = null;
+        
+        // 页面加载时从本地存储获取数据或初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 显示当前日期
+            displayCurrentDate();
+            
+            // 从本地存储加载数据
+            loadData();
+            
+            // 渲染任务和待办事项
+            renderTasks();
+            renderTodos();
+            updateStats();
+            
+            // 设置事件监听器
+            document.getElementById('addTaskBtn').addEventListener('click', addNewTask);
+            document.getElementById('addTodoBtn').addEventListener('click', addNewTodo);
+            document.getElementById('newTaskInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addNewTask();
+            });
+            document.getElementById('newTodoInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addNewTodo();
+            });
+            document.getElementById('clearAllTasks').addEventListener('click', clearAllTasks);
+            document.getElementById('clearAllTodos').addEventListener('click', clearAllTodos);
+            document.getElementById('closeEditModal').addEventListener('click', closeEditModal);
+            document.getElementById('cancelEdit').addEventListener('click', closeEditModal);
+            document.getElementById('editTaskForm').addEventListener('submit', saveEditedTask);
+            
+            // 点击模态框外部关闭模态框
+            document.getElementById('editTaskModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeEditModal();
+                }
+            });
+        });
+        
+        // 显示当前日期
+        function displayCurrentDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const dateString = now.toLocaleDateString('zh-CN', options);
+            document.getElementById('currentDate').textContent = dateString;
+        }
+        
+        // 从本地存储加载数据
+        function loadData() {
+            // 尝试从本地存储加载任务
+            const savedTasks = localStorage.getItem('dailyTasks');
+            if (savedTasks) {
+                tasks = JSON.parse(savedTasks);
+            } else {
+                // 如果没有保存的数据，初始化一些示例任务（用户可以删除）
+                tasks = [
+                    { id: 1, name: '阅读《JavaScript高级程序设计》', total: 500, current: 120 },
+                    { id: 2, name: '学习React框架', total: 100, current: 45 },
+                    { id: 3, name: '完成健身计划', total: 30, current: 12 },
+                    { id: 4, name: '学习英语单词', total: 1000, current: 320 }
+                ];
+            }
+            
+            // 尝试从本地存储加载待办事项
+            const savedTodos = localStorage.getItem('dailyTodos');
+            if (savedTodos) {
+                todos = JSON.parse(savedTodos);
+            } else {
+                // 如果没有保存的数据，初始化一些示例待办事项（用户可以删除）
+                todos = [
+                    { id: 1, text: '完成项目报告', completed: false, time: '09:00' },
+                    { id: 2, text: '团队会议', completed: true, time: '10:30' },
+                    { id: 3, text: '回复客户邮件', completed: false, time: '14:00' },
+                    { id: 4, text: '准备明日演示', completed: false, time: '16:00' }
+                ];
+            }
+        }
+        
+        // 保存数据到本地存储
+        function saveData() {
+            localStorage.setItem('dailyTasks', JSON.stringify(tasks));
+            localStorage.setItem('dailyTodos', JSON.stringify(todos));
+        }
+        
+        // 渲染任务列表
+        function renderTasks() {
+            const tasksContainer = document.getElementById('tasksContainer');
+            const emptyTasks = document.getElementById('emptyTasks');
+            
+            if (tasks.length === 0) {
+                tasksContainer.innerHTML = '';
+                emptyTasks.style.display = 'block';
+                return;
+            }
+            
+            emptyTasks.style.display = 'none';
+            tasksContainer.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const progress = Math.round((task.current / task.total) * 100);
+                const taskElement = document.createElement('div');
+                taskElement.className = 'task-item';
+                taskElement.innerHTML = `
+                    <div class="task-header">
+                        <div class="task-name">${task.name}</div>
+                        <div class="task-controls">
+                            <button class="task-btn edit-btn" onclick="openEditTaskModal(${task.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="task-btn delete-btn" onclick="deleteTask(${task.id})">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="task-details">
+                        <div class="task-target">目标: ${task.total}</div>
+                        <div class="task-current">已完成: ${task.current}</div>
+                        <div class="task-percentage">${progress}%</div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: ${progress}%"></div>
+                        <div class="progress-text">${progress}% 已完成</div>
+                    </div>
+                    <div class="progress-controls">
+                        <div class="progress-input-group">
+                            <input type="number" class="progress-input" id="updateValue-${task.id}" placeholder="输入更新值">
+                            <button class="progress-btn" onclick="updateTaskProgress(${task.id})">
+                                <i class="fas fa-plus-circle"></i> 更新进度
+                            </button>
+                        </div>
+                        <button class="progress-btn" onclick="setTaskToComplete(${task.id})">
+                            <i class="fas fa-check-circle"></i> 标记为完成
+                        </button>
+                    </div>
+                `;
+                tasksContainer.appendChild(taskElement);
+            });
+        }
+        
+        // 渲染待办事项列表
+        function renderTodos() {
+            const todoList = document.getElementById('todoList');
+            const emptyTodos = document.getElementById('emptyTodos');
+            
+            if (todos.length === 0) {
+                todoList.innerHTML = '';
+                emptyTodos.style.display = 'block';
+                return;
+            }
+            
+            emptyTodos.style.display = 'none';
+            todoList.innerHTML = '';
+            
+            todos.forEach(todo => {
+                const todoItem = document.createElement('li');
+                todoItem.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                todoItem.innerHTML = `
+                    <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
+                           onchange="toggleTodo(${todo.id})">
+                    <span class="todo-text">${todo.text}</span>
+                    <span class="todo-time">${todo.time}</span>
+                    <button class="todo-delete-btn" onclick="deleteTodo(${todo.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                todoList.appendChild(todoItem);
+            });
+        }
+        
+        // 打开任务编辑模态框
+        function openEditTaskModal(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            currentEditTaskId = taskId;
+            document.getElementById('editTaskName').value = task.name;
+            document.getElementById('editTotalTarget').value = task.total;
+            document.getElementById('editCurrentValue').value = task.current;
+            
+            document.getElementById('editTaskModal').style.display = 'flex';
+        }
+        
+        // 关闭任务编辑模态框
+        function closeEditTaskModal() {
+            document.getElementById('editTaskModal').style.display = 'none';
+            currentEditTaskId = null;
+        }
+        
+        // 保存编辑后的任务
+        function saveEditedTask(e) {
+            e.preventDefault();
+            
+            if (currentEditTaskId === null) return;
+            
+            const taskIndex = tasks.findIndex(t => t.id === currentEditTaskId);
+            if (taskIndex === -1) return;
+            
+            const name = document.getElementById('editTaskName').value.trim();
+            const total = parseInt(document.getElementById('editTotalTarget').value);
+            const current = parseInt(document.getElementById('editCurrentValue').value);
+            
+            if (name === '' || isNaN(total) || isNaN(current) || total <= 0 || current < 0) {
+                alert('请输入有效的任务信息');
+                return;
+            }
+            
+            if (current > total) {
+                alert('当前完成量不能超过总目标量');
+                return;
+            }
+            
+            tasks[taskIndex].name = name;
+            tasks[taskIndex].total = total;
+            tasks[taskIndex].current = current;
+            
+            saveData();
+            renderTasks();
+            updateStats();
+            closeEditTaskModal();
+        }
+        
+        // 删除任务
+        function deleteTask(taskId) {
+            if (confirm('确定要删除这个任务吗？')) {
+                tasks = tasks.filter(task => task.id !== taskId);
+                saveData();
+                renderTasks();
+                updateStats();
+            }
+        }
+        
+        // 删除待办事项
+        function deleteTodo(todoId) {
+            todos = todos.filter(todo => todo.id !== todoId);
+            saveData();
+            renderTodos();
+            updateStats();
+        }
+        
+        // 清空所有任务
+        function clearAllTasks() {
+            if (tasks.length === 0) {
+                alert('当前没有任务可清空');
+                return;
+            }
+            
+            if (confirm('确定要清空所有任务吗？此操作不可撤销。')) {
+                tasks = [];
+                saveData();
+                renderTasks();
+                updateStats();
+            }
+        }
+        
+        // 清空所有待办事项
+        function clearAllTodos() {
+            if (todos.length === 0) {
+                alert('当前没有待办事项可清空');
+                return;
+            }
+            
+            if (confirm('确定要清空所有待办事项吗？此操作不可撤销。')) {
+                todos = [];
+                saveData();
+                renderTodos();
+                updateStats();
+            }
+        }
+        
+        // 更新任务进度
+        function updateTaskProgress(taskId) {
+            const input = document.getElementById(`updateValue-${taskId}`);
+            const value = parseInt(input.value);
+            
+            if (isNaN(value) || value < 0) {
+                alert('请输入有效的数值');
+                return;
+            }
+            
+            const taskIndex = tasks.findIndex(task => task.id === taskId);
+            if (taskIndex === -1) return;
+            
+            // 更新当前完成量，但不超过总目标量
+            const newCurrent = Math.min(tasks[taskIndex].total, value);
+            tasks[taskIndex].current = newCurrent;
+            
+            // 清空输入框
+            input.value = '';
+            
+            // 保存并重新渲染
+            saveData();
+            renderTasks();
+            updateStats();
+        }
+        
+        // 标记任务为完成（设置当前完成量为总目标量）
+        function setTaskToComplete(taskId) {
+            const taskIndex = tasks.findIndex(task => task.id === taskId);
+            if (taskIndex === -1) return;
+            
+            tasks[taskIndex].current = tasks[taskIndex].total;
+            
+            // 保存并重新渲染
+            saveData();
+            renderTasks();
+            updateStats();
+        }
+        
+        // 切换待办事项完成状态
+        function toggleTodo(todoId) {
+            const todoIndex = todos.findIndex(todo => todo.id === todoId);
+            if (todoIndex === -1) return;
+            
+            todos[todoIndex].completed = !todos[todoIndex].completed;
+            
+            // 保存并重新渲染
+            saveData();
+            renderTodos();
+            updateStats();
+        }
+        
+        // 添加新任务
+        function addNewTask() {
+            const taskInput = document.getElementById('newTaskInput');
+            const taskName = taskInput.value.trim();
+            
+            if (taskName === '') {
+                alert('请输入任务名称');
+                return;
+            }
+            
+            // 通过提示框获取总目标量和当前完成量
+            const total = prompt(`请输入 "${taskName}" 的总目标量：`, "100");
+            if (total === null) return; // 用户取消
+            
+            const totalNum = parseInt(total);
+            if (isNaN(totalNum) || totalNum <= 0) {
+                alert('请输入有效的总目标量（正数）');
+                return;
+            }
+            
+            const current = prompt(`请输入 "${taskName}" 的当前完成量：`, "0");
+            if (current === null) return; // 用户取消
+            
+            const currentNum = parseInt(current);
+            if (isNaN(currentNum) || currentNum < 0) {
+                alert('请输入有效的当前完成量（非负数）');
+                return;
+            }
+            
+            if (currentNum > totalNum) {
+                alert('当前完成量不能超过总目标量');
+                return;
+            }
+            
+            // 创建新任务
+            const newTask = {
+                id: Date.now(), // 使用时间戳作为ID
+                name: taskName,
+                total: totalNum,
+                current: currentNum
+            };
+            
+            tasks.push(newTask);
+            
+            // 清空输入框
+            taskInput.value = '';
+            
+            // 保存并重新渲染
+            saveData();
+            renderTasks();
+            updateStats();
+        }
+        
+        // 添加新待办事项
+        function addNewTodo() {
+            const todoInput = document.getElementById('newTodoInput');
+            const todoText = todoInput.value.trim();
+            
+            if (todoText === '') {
+                alert('请输入待办事项');
+                return;
+            }
+            
+            // 创建新待办事项
+            const now = new Date();
+            const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            const newTodo = {
+                id: Date.now(), // 使用时间戳作为ID
+                text: todoText,
+                completed: false,
+                time: timeString
+            };
+            
+            todos.push(newTodo);
+            
+            // 清空输入框
+            todoInput.value = '';
+            
+            // 保存并重新渲染
+            saveData();
+            renderTodos();
+            updateStats();
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            // 总任务数
+            document.getElementById('totalTasks').textContent = tasks.length;
+            
+            // 平均进度
+            const avgProgress = tasks.length > 0 
+                ? Math.round(tasks.reduce((sum, task) => sum + (task.current / task.total * 100), 0) / tasks.length)
+                : 0;
+            document.getElementById('avgProgress').textContent = `${avgProgress}%`;
+            
+            // 已完成待办数
+            const completedTodosCount = todos.filter(todo => todo.completed).length;
+            document.getElementById('completedTodos').textContent = completedTodosCount;
+            
+            // 总待办数
+            document.getElementById('totalTodos').textContent = todos.length;
+        }
+        
+        // 简化关闭模态框的函数名
+        function closeEditModal() {
+            closeEditTaskModal();
+        }
+    </script>
+</body>
+</html>
